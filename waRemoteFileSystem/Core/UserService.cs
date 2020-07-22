@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -13,12 +12,12 @@ using static waRemoteFileSystem.Utils.CHash;
 
 namespace waRemoteFileSystem.Core
 {
-    public class UserService :IUserService
+    public class UserService : IUserService
     {
         private MyDbContext db;
         private IConfiguration config;
 
-        public UserService(MyDbContext dbContext, IConfiguration Configuration) 
+        public UserService(MyDbContext dbContext, IConfiguration Configuration)
         {
             db = dbContext;
             config = Configuration;
@@ -28,10 +27,11 @@ namespace waRemoteFileSystem.Core
         {
             UserResponse usr = new UserResponse();
 
+           
             var res = await db.tbUsers.Include(x => x.Role)
-                               .FirstOrDefaultAsync(x => x.Username == request.Username && x.Password == HashSha256.Get(request.Password) );
+                               .FirstOrDefaultAsync(x => x.Username == request.Username && x.Password == HashSha256.Get(request.Password));
 
-            if (res == null) return null;
+            if (res == null) return new UserResponse() { Status = 0, StatusMessage = "Not found user" };
 
             var SecretStr = config.GetSection("JwtToken:SecretKey").Value;
             var key = Encoding.ASCII.GetBytes(SecretStr);
@@ -54,6 +54,7 @@ namespace waRemoteFileSystem.Core
             usr.LastName = res.LastName;
             usr.Username = res.Username;
             usr.Access = res.Role.UserAccess;
+            usr.Status = 1;
             usr.Id = res.Id;
 
             return usr;
@@ -63,6 +64,16 @@ namespace waRemoteFileSystem.Core
         {
             var eu = await db.tbUsers.FirstOrDefaultAsync(x => x.Username == model.Username);
             if (eu != null) return new UserResponse() { Status = 0, StatusMessage = "User exits" };
+
+            var role = db.spRoles.Find(1);
+            if (role == null)
+            {
+                var r = new spRole();
+                r.Name = "Admin";
+                r.UserAccess = ",999";
+                await db.spRoles.AddAsync(r);
+                await db.SaveChangesAsync();
+            }
 
 
             var u = new tbUser();

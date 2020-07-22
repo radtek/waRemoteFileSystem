@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading.Tasks;
 using waRemoteFileSystem.Core;
@@ -7,7 +6,7 @@ using waRemoteFileSystem.Models;
 
 namespace waRemoteFileSystem.Controllers
 {
-    [Authorize]
+
     [ApiController]
     [Route("api/[controller]")]
     [SwaggerTag("Users")]
@@ -20,7 +19,7 @@ namespace waRemoteFileSystem.Controllers
             user = _user;
         }
 
-        [AllowAnonymous]
+      
         [HttpPost("register")]
         [SwaggerOperation("New user")]
         public async Task<ActionResult> NewUser([FromBody] RegisterUserModel model)
@@ -30,7 +29,6 @@ namespace waRemoteFileSystem.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpPost("login")]
         [SwaggerOperation("User Authentication")]
         public async Task<IActionResult> AuthenticateAsync([FromBody] UserRequest model)

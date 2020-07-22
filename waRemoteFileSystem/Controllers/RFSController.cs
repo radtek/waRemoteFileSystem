@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,14 +9,16 @@ using waRemoteFileSystem.Utils;
 
 namespace waRemoteFileSystem.Controllers
 {
+
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
-    public class RFSController : ControllerBase
+    public class RfsController : ControllerBase
     {
         private readonly IFileSystem fs;
-        private readonly ILogger<RFSController> log;
+        private readonly ILogger<RfsController> log;
 
-        public RFSController(ILogger<RFSController> _log, IFileSystem _fs)
+        public RfsController(ILogger<RfsController> _log, IFileSystem _fs)
         {
             fs = _fs;
             log = _log;
@@ -59,7 +58,9 @@ namespace waRemoteFileSystem.Controllers
         public IActionResult GetList(SmRequest param)
         {
             var res = fs.GetList(param.Value);
-            return Ok(res);
+            if (res.IsNotFound) return NotFound("Directory not found");
+
+            return Ok(res.list);
         }
 
 

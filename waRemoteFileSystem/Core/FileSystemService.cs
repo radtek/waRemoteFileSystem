@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.IO;
 using System.Threading.Tasks;
 using waRemoteFileSystem.Models;
@@ -15,7 +14,7 @@ namespace waRemoteFileSystem.Core
         bool DirectoryExists(string directoryPath);
 
 
-        RList GetList(string path);
+        (RList list, bool IsNotFound)  GetList(string path);
 
         bool FileExists(string filePath);
 
@@ -98,10 +97,11 @@ namespace waRemoteFileSystem.Core
             }
         }
 
-        public RList GetList(string path)
+        public (RList list, bool IsNotFound) GetList(string path)
         {
-            RList ls = new RList();
+            if (!Directory.Exists(Path.Combine(RootPath, path))) return (null, true);
 
+            RList ls = new RList();
             DirectoryInfo dirInfo = new DirectoryInfo(Path.Combine(RootPath, path));
 
             foreach (var i in dirInfo.GetDirectories())
@@ -114,7 +114,7 @@ namespace waRemoteFileSystem.Core
                 ls.Files.Add(new RFile() { Name = i.Name, Type = i.Extension, Size = i.Length, CreateDate = i.CreationTime, UpdateDate = i.LastWriteTime });
             }
 
-            return ls;
+            return ( ls, false );
         }
 
         public string GetFileCrc32(string path)

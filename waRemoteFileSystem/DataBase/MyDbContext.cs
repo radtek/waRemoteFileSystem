@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Toolbelt.ComponentModel.DataAnnotations;
 
 namespace waRemoteFileSystem.DataBase
 {
@@ -11,11 +10,6 @@ namespace waRemoteFileSystem.DataBase
         private readonly IConfiguration conf;
         private readonly ILoggerFactory logger;
 
-        public MyDbContext(IConfiguration _conf)
-        {
-            conf = _conf;
-        }
-
         public MyDbContext(DbContextOptions<MyDbContext> options, ILoggerFactory _logger, IConfiguration _conf) : base(options)
         {
             logger = _logger;
@@ -23,27 +17,28 @@ namespace waRemoteFileSystem.DataBase
         }
 
         #region Declare
-         
+
         public DbSet<spRole> spRoles { get; set; }
         public DbSet<tbUser> tbUsers { get; set; }
 
         #endregion
- 
+
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
-            var connectionStr = conf.GetConnectionString("DefaultConnection");
-
-            builder.UseSqlite(connectionStr);
-            builder.EnableDetailedErrors();
-            builder.UseLoggerFactory(logger);
+            builder.UseSqlite("Data Source=./data.db");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.BuildIndexesFromAnnotations();
+            //modelBuilder.Entity<spRole>().HasData(
+            //  new spRole() { Id = 1, Name = "Admin", UserAccess = "999" });
+
+            //modelBuilder.Entity<tbUser>().HasData(
+            //    new tbUser() { Id = 1, FirstName = "admin", LastName = "admin", Username = "admin", Password = HashSha256.Get("1"), EMail = "tdavron@gmail.com", RoleId = 1 });
+
+            
         }
     }
-
 }
